@@ -28,6 +28,9 @@ def generate_csrf(secret_key=None, token_key=None):
         ``WTF_CSRF_SECRET_KEY`` or ``SECRET_KEY``.
     :param token_key: Key where token is stored in session for comparision.
         Default is ``WTF_CSRF_FIELD_NAME`` or ``'csrf_token'``.
+
+
+        生成csrf token
     """
 
     secret_key = _get_config(
@@ -66,6 +69,9 @@ def validate_csrf(data, secret_key=None, time_limit=None, token_key=None):
     .. versionchanged:: 0.14
         Raises ``ValidationError`` with a specific error message rather than
         returning ``True`` or ``False``.
+
+
+        验证csrf token
     """
 
     secret_key = _get_config(
@@ -176,6 +182,7 @@ class CSRFProtect(object):
     def init_app(self, app):
         app.extensions['csrf'] = self
 
+        # 配置
         app.config.setdefault('WTF_CSRF_ENABLED', True)
         app.config.setdefault('WTF_CSRF_CHECK_DEFAULT', True)
         app.config['WTF_CSRF_METHODS'] = set(app.config.get(
@@ -188,9 +195,11 @@ class CSRFProtect(object):
         app.config.setdefault('WTF_CSRF_TIME_LIMIT', 3600)
         app.config.setdefault('WTF_CSRF_SSL_STRICT', True)
 
+        # 注册 csrf_token 到 jinja2
         app.jinja_env.globals['csrf_token'] = generate_csrf
         app.context_processor(lambda: {'csrf_token': generate_csrf})
 
+        # 注册请求前处理函数
         @app.before_request
         def csrf_protect():
             if not app.config['WTF_CSRF_ENABLED']:
